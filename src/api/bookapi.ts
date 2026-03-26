@@ -12,7 +12,7 @@ const getAxiosConfig = (): AxiosRequestConfig => {
   };
   
   export const getBooks = async (): Promise<BookResponse[]> => {
-    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/books`, getAxiosConfig());
+    const response = await axios.get(`${import.meta.env.VITE_API_URL}/books`, getAxiosConfig());
     return response.data._embedded.books;
   }
   
