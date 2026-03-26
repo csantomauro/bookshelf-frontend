@@ -12,8 +12,8 @@ const getAxiosConfig = (): AxiosRequestConfig => {
   };
   
   export const getBooks = async (): Promise<BookResponse[]> => {
-    const response = await axios.get(`${import.meta.env.VITE_API_URL}/books`, getAxiosConfig());
-    return response.data;
+    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/books`, getAxiosConfig());
+    return response.data._embedded.books;
   }
   
   export const deleteBook = async (link: string): Promise<BookResponse> => {
@@ -22,7 +22,7 @@ const getAxiosConfig = (): AxiosRequestConfig => {
   }
   
   export const addBook = async (book: Book): Promise<BookResponse> => {
-    const response = await axios.post(`${import.meta.env.VITE_API_URL}/books`, book, getAxiosConfig());
+    const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/books`, book, getAxiosConfig());
     return response.data;
   }
   
