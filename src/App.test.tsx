@@ -6,6 +6,6 @@ import '@testing-library/jest-dom/vitest';
 describe("App tests", () => {
     test("component renders", () => {
         render(<App />)
-        expect(screen.getByText(/Book Library/i)).toBeInTheDocument();
+        expect(screen.getByText(/Book Shop/i)).toBeInTheDocument();
     })
 })

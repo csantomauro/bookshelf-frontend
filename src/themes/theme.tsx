@@ -4,8 +4,8 @@ const theme = (darkMode: boolean) =>
   createTheme({
     palette: {
       mode: darkMode ? 'dark' : 'light',
-      primary: { main: '#0956af' },    // your requested blue
-      secondary: { main: '#af6209' },  // brown accent
+      primary: { main: '#0956af' },
+      secondary: { main: '#af6209' },
       background: {
         default: darkMode ? '#121212' : '#f5f5f5',
         paper: darkMode ? '#1E1E1E' : '#fff',
@@ -27,7 +27,7 @@ const theme = (darkMode: boolean) =>
             fontWeight: 500,
           },
           containedPrimary: {
-            backgroundColor: darkMode ? '#0d73d3' : '#0956af', // slightly lighter blue in dark mode
+            backgroundColor: darkMode ? '#0d73d3' : '#0956af',
             color: '#fff',
             '&:hover': {
               backgroundColor: darkMode ? '#0f7ae0' : '#0a4a8d',
