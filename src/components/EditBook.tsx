@@ -8,12 +8,14 @@ import type { Book, BookEntry, BookResponse } from '../type';
 import { Button, IconButton, Tooltip } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit'
 import { updateBook } from '../api/bookapi';
+import { isForbiddenError } from '../auth/auth';
 
 type FormProps = {
   bookdata: BookResponse;
+  onForbidden?: () => void;
 }
 
-function EditBook({ bookdata }: FormProps) {
+function EditBook({ bookdata, onForbidden }: FormProps) {
   const queryClient = useQueryClient();
 
   const [open, setOpen] = useState(false);
@@ -41,6 +43,11 @@ const { mutate } = useMutation({
         setOpen(false);
       },
       onError: (err) => {
+        if (isForbiddenError(err)) {
+          setOpen(false);
+          onForbidden?.();
+          return;
+        }
         console.error(err);
       },
     }); 
@@ -62,7 +69,7 @@ const { mutate } = useMutation({
   };
   const handleSave = () => {
     const bookEntry: BookEntry = { book, url: bookdata._links.self.href };
-    mutate(bookEntry); // `onSuccess` already closes dialog and resets state
+    mutate(bookEntry);
 };
 
   const handleChange = (event : React.ChangeEvent<HTMLInputElement>) => {
@@ -94,7 +101,7 @@ const { mutate } = useMutation({
           <Button variant="outlined" color="secondary" onClick={handleClose}>Cancel</Button>
           <Button variant="contained" color="primary" type="submit">Save</Button>
         </DialogActions>
-      </Dialog>    
+      </Dialog>
     </>
   );
 }

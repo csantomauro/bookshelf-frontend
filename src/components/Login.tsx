@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Box, Button, Paper, Snackbar, Stack, TextField } from '@mui/material';
 import axios from 'axios';
 import Booklist from './Booklist';
+import { clearAuth, isAuthenticated, storeAuthToken } from '../auth/auth';
 
 type User = {
     username: string;
@@ -14,7 +15,7 @@ function Login() {
         password: ''
     });
 
-    const [isAuthenticated, setAuth] = useState(!!sessionStorage.getItem("jwt"));
+    const [isLoggedIn, setLoggedIn] = useState(isAuthenticated());
 
     const [open, setOpen] = useState(false);
 
@@ -32,18 +33,18 @@ function Login() {
           .then(res => {
             const jwtToken = res.headers['authorization'];
             if (jwtToken) {
-              sessionStorage.setItem("jwt", jwtToken);
-              setAuth(true);
+              storeAuthToken(jwtToken);
+              setLoggedIn(true);
             }
           })
           .catch(() => setOpen(true));
       };
 
     const handleLogout = () => {
-        setAuth(false);
-        sessionStorage.removeItem("jwt");
+        setLoggedIn(false);
+        clearAuth();
     }
-    if (isAuthenticated) {
+    if (isLoggedIn) {
         return <Booklist logOut={handleLogout}/>
     }
     else{

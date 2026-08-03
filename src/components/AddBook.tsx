@@ -4,8 +4,13 @@ import { useState } from "react";
 import type { Book } from "../type";
 import BookDialogContent from "./BookDialogContent";
 import { addBook } from "../api/bookapi";
+import { isForbiddenError } from "../auth/auth";
 
-function AddBook() {
+type AddBookProps = {
+  onForbidden?: () => void;
+};
+
+function AddBook({ onForbidden }: AddBookProps) {
     const queryClient = useQueryClient();
     const [open, setOpen] = useState(false);
     const [book, setBook] = useState<Book>({
@@ -32,6 +37,11 @@ function AddBook() {
         setOpen(false);
       },
       onError: (err) => {
+        if (isForbiddenError(err)) {
+          setOpen(false);
+          onForbidden?.();
+          return;
+        }
         console.error(err);
       },
     }); 

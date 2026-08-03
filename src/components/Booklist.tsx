@@ -7,6 +7,7 @@ import AddBook from './AddBook';
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditBook from './EditBook';
 import { deleteBook, getBooks } from '../api/bookapi';
+import { isAdmin, isForbiddenError, PERMISSION_DENIED_MESSAGE } from '../auth/auth';
 
 type BooklistProp = {
     logOut?: () => void;
@@ -14,31 +15,45 @@ type BooklistProp = {
 
 function Booklist({logOut}: BooklistProp) {
     const [open, setOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const admin = isAdmin();
     const queryClient = useQueryClient();
     const { data, error, isSuccess } = useQuery<BookResponse[], Error>({
         queryKey: ["books"],
         queryFn: getBooks
     });
 
+    const showSnackbar = (message: string) => {
+        setSnackbarMessage(message);
+        setOpen(true);
+    };
+
     const { mutate } = useMutation({
         mutationFn: deleteBook,
         onSuccess: () => {
-          setOpen(true);
+          showSnackbar("Book deleted");
           queryClient.invalidateQueries({ queryKey: ['books'] });
         },
         onError: (err) => {
+          if (isForbiddenError(err)) {
+            showSnackbar(PERMISSION_DENIED_MESSAGE);
+            return;
+          }
           console.error(err);
         }
     });
       
 
-    const columns: GridColDef[] = [
+    const baseColumns: GridColDef[] = [
         {field: 'title', headerName: 'Title', width: 200},
         {field: 'genre', headerName: 'Genre', width: 200},
         {field: 'isbn', headerName: 'Isbn', width: 200},
         {field: 'publisher', headerName: 'Publisher', width: 150},
         {field: 'publicationYear', headerName: 'Publication Year', width: 150},
         {field: 'price', headerName: 'Price', width: 150},
+    ];
+
+    const adminColumns: GridColDef[] = [
         {
             field: 'edit',
             headerName: '',
@@ -47,7 +62,7 @@ function Booklist({logOut}: BooklistProp) {
             filterable: false,
             disableColumnMenu: true,
             renderCell: (params: GridCellParams) =>
-              <EditBook bookdata={params.row} />
+              <EditBook bookdata={params.row} onForbidden={() => showSnackbar(PERMISSION_DENIED_MESSAGE)} />
         },
         {
             field: 'delete',
@@ -71,6 +86,8 @@ function Booklist({logOut}: BooklistProp) {
         }
     ];
 
+    const columns = admin ? [...baseColumns, ...adminColumns] : baseColumns;
+
     if (error) return <Box>Failed to load books.</Box>;
     if (!isSuccess) return <Box>Loading...</Box>;
 
@@ -78,7 +95,11 @@ function Booklist({logOut}: BooklistProp) {
         return (
             <Box>
             <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-                <AddBook />
+                {admin ? (
+                  <AddBook onForbidden={() => showSnackbar(PERMISSION_DENIED_MESSAGE)} />
+                ) : (
+                  <Box />
+                )}
                 <Button variant="outlined" color="secondary" onClick={logOut}>
                 Log out
                 </Button>
@@ -94,9 +115,9 @@ function Booklist({logOut}: BooklistProp) {
 
             <Snackbar
                 open={open}
-                autoHideDuration={2000}
+                autoHideDuration={3000}
                 onClose={() => setOpen(false)}
-                message="Book deleted"
+                message={snackbarMessage}
             />
             </Box>
         );
