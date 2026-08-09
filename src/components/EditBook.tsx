@@ -73,8 +73,8 @@ const { mutate } = useMutation({
 };
 
   const handleChange = (event : React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-    setBook({ ...book, [name]: value });
+    const { name, value, type } = event.target;
+    setBook({ ...book, [name]: type === 'number' ? Number(value) : value });
   }
 
   return(

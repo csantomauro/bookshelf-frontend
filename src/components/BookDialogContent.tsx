@@ -20,9 +20,9 @@ function BookDialogContent({ book, handleChange }: DialogFormProps) {
                 value={book.isbn} onChange={handleChange}/>
             <TextField label="Publisher" name="publisher"
                 value={book.publisher} onChange={handleChange}/>
-            <TextField label="PublicationYear" name="publicationYear"
+            <TextField label="PublicationYear" name="publicationYear" type="number"
                 value={book.publicationYear} onChange={handleChange}/>
-            <TextField label="Price" name="price"
+            <TextField label="Price" name="price" type="number"
                 value={book.price} onChange={handleChange}/>
           </Stack>
         

@@ -47,7 +47,8 @@ function AddBook({ onForbidden }: AddBookProps) {
     }); 
     
     const handleChange = (event : React.ChangeEvent<HTMLInputElement>) => {
-      setBook({...book, [event.target.name]: event.target.value});
+      const { name, value, type } = event.target;
+      setBook({...book, [name]: type === 'number' ? Number(value) : value});
     }
   
     return(
