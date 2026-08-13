@@ -9,9 +9,9 @@ A React + TypeScript frontend for managing a personal book library. Users can lo
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 18, TypeScript, Vite |
-| UI | Material UI (MUI) v5, MUI X DataGrid |
-| Data fetching | TanStack Query (React Query) v5 |
+| Frontend | React 19, TypeScript, Vite |
+| UI | Material UI (MUI) v7, MUI X DataGrid |
+| Data fetching | TanStack Query (React Query) v4 |
 | HTTP client | Axios |
 | Deployment | Vercel |
 
