@@ -3,17 +3,15 @@ import type { BookResponse } from "../type";
 import { DataGrid, type GridCellParams, type GridColDef } from '@mui/x-data-grid';
 import { useState } from 'react';
 import { Box, Button, IconButton, Snackbar, Stack } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import AddBook from './AddBook';
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditBook from './EditBook';
 import { deleteBook, getBooks } from '../api/bookapi';
-import { isAdmin, isForbiddenError, PERMISSION_DENIED_MESSAGE } from '../auth/auth';
+import { clearAuth, isAdmin, isForbiddenError, PERMISSION_DENIED_MESSAGE } from '../auth/auth';
 
-type BooklistProp = {
-    logOut?: () => void;
-}
-
-function Booklist({logOut}: BooklistProp) {
+function Booklist() {
+    const navigate = useNavigate();
     const [open, setOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const admin = isAdmin();
@@ -26,6 +24,11 @@ function Booklist({logOut}: BooklistProp) {
     const showSnackbar = (message: string) => {
         setSnackbarMessage(message);
         setOpen(true);
+    };
+
+    const handleLogout = () => {
+        clearAuth();
+        navigate('/login');
     };
 
     const { mutate } = useMutation({
@@ -100,7 +103,7 @@ function Booklist({logOut}: BooklistProp) {
                 ) : (
                   <Box />
                 )}
-                <Button variant="outlined" color="secondary" onClick={logOut}>
+                <Button variant="outlined" color="secondary" onClick={handleLogout}>
                 Log out
                 </Button>
             </Stack>
