@@ -1,13 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { BookResponse } from "../type";
 import { useState } from 'react';
-import { Box, Button, Card, CardActionArea, CardActions, CardContent, Grid, IconButton, Snackbar, Stack, Typography } from '@mui/material';
+import { Box, Card, CardActionArea, CardActions, CardContent, Grid, IconButton, Snackbar, Stack, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import AddBook from './AddBook';
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditBook from './EditBook';
 import { deleteBook, getBooks } from '../api/bookapi';
-import { clearAuth, isAdmin, isForbiddenError, PERMISSION_DENIED_MESSAGE } from '../auth/auth';
+import { isForbiddenError, PERMISSION_DENIED_MESSAGE, useIsAdmin } from '../auth/auth';
 
 const extractId = (href: string): string => href.substring(href.lastIndexOf('/') + 1);
 
@@ -15,7 +15,7 @@ function Booklist() {
     const navigate = useNavigate();
     const [open, setOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
-    const admin = isAdmin();
+    const admin = useIsAdmin();
     const queryClient = useQueryClient();
     const { data, error, isSuccess } = useQuery<BookResponse[], Error>({
         queryKey: ["books"],
@@ -25,14 +25,6 @@ function Booklist() {
     const showSnackbar = (message: string) => {
         setSnackbarMessage(message);
         setOpen(true);
-    };
-
-    const handleLogout = () => {
-        clearAuth();
-        // Otherwise the next user to log in on this tab sees stale
-        // per-user data (e.g. "your review") from the previous session.
-        queryClient.clear();
-        navigate('/login');
     };
 
     const { mutate } = useMutation({
@@ -55,16 +47,11 @@ function Booklist() {
 
     return (
         <Box>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-            {admin ? (
-              <AddBook onForbidden={() => showSnackbar(PERMISSION_DENIED_MESSAGE)} />
-            ) : (
-              <Box />
-            )}
-            <Button variant="outlined" color="secondary" onClick={handleLogout}>
-            Log out
-            </Button>
-        </Stack>
+        {admin && (
+            <Stack direction="row" justifyContent="flex-end" sx={{ mb: 2 }}>
+                <AddBook onForbidden={() => showSnackbar(PERMISSION_DENIED_MESSAGE)} />
+            </Stack>
+        )}
 
         <Grid container spacing={2}>
             {data.map((book) => (

@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Box, Button, Divider, Paper, Rating, Snackbar, Stack, TextField, Typography } from '@mui/material';
 import { deleteMyReview, getBook, getMyReview, getReviews, upsertMyReview } from '../api/reviewapi';
-import { getUsername, isForbiddenError, PERMISSION_DENIED_MESSAGE } from '../auth/auth';
+import { getUsername, isForbiddenError, PERMISSION_DENIED_MESSAGE, useIsAuthenticated } from '../auth/auth';
 
 const formatDate = (iso: string): string => new Date(iso).toLocaleDateString();
 
@@ -13,6 +13,7 @@ function BookDetail() {
   const bookId = id as string;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const authed = useIsAuthenticated();
 
   const [open, setOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -34,6 +35,7 @@ function BookDetail() {
   const { data: myReview } = useQuery({
     queryKey: ['myReview', bookId],
     queryFn: () => getMyReview(bookId),
+    enabled: authed,
   });
 
   const [rating, setRating] = useState<number | null>(0);
@@ -115,33 +117,40 @@ function BookDetail() {
 
       <Typography variant="h6" sx={{ mb: 1 }}>Your review</Typography>
       <Paper sx={{ p: 2, mb: 3 }}>
-        <form onSubmit={(e) => { e.preventDefault(); saveReview(); }}>
-          <Stack spacing={2}>
-            <Rating
-              name="my-rating"
-              value={rating}
-              onChange={(_, newValue) => setRating(newValue)}
-            />
-            <TextField
-              label="Your thoughts (optional)"
-              multiline
-              minRows={2}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-            />
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Button type="submit" variant="contained" disabled={!rating}>Save</Button>
-              {myReview && (
-                <>
-                  <Button variant="outlined" color="secondary" onClick={() => removeReview()}>Delete</Button>
-                  <Typography variant="caption" color="text.secondary">
-                    Last saved {formatDate(myReview.updatedAt ?? myReview.createdAt)}
-                  </Typography>
-                </>
-              )}
+        {authed ? (
+          <form onSubmit={(e) => { e.preventDefault(); saveReview(); }}>
+            <Stack spacing={2}>
+              <Rating
+                name="my-rating"
+                value={rating}
+                onChange={(_, newValue) => setRating(newValue)}
+              />
+              <TextField
+                label="Your thoughts (optional)"
+                multiline
+                minRows={2}
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+              />
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Button type="submit" variant="contained" disabled={!rating}>Save</Button>
+                {myReview && (
+                  <>
+                    <Button variant="outlined" color="secondary" onClick={() => removeReview()}>Delete</Button>
+                    <Typography variant="caption" color="text.secondary">
+                      Last saved {formatDate(myReview.updatedAt ?? myReview.createdAt)}
+                    </Typography>
+                  </>
+                )}
+              </Stack>
             </Stack>
+          </form>
+        ) : (
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography color="text.secondary">Log in to write a review.</Typography>
+            <Button size="small" onClick={() => navigate('/login')}>Log in</Button>
           </Stack>
-        </form>
+        )}
       </Paper>
 
       <Divider sx={{ mb: 3 }} />

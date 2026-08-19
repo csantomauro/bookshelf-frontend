@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { CssBaseline, AppBar, Toolbar, Typography, Container, Switch} from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom';
 import Login from './components/Login';
 import Booklist from './components/Booklist';
 import BookDetail from './components/BookDetail';
-import RequireAuth from './components/RequireAuth';
+import AuthButton from './components/AuthButton';
 import theme from './themes/theme';
 
 const queryClient = new QueryClient();
@@ -21,7 +21,12 @@ function App() {
         <BrowserRouter>
           <AppBar position="static" color="primary">
             <Toolbar>
-              <Typography variant="h6" sx={{ flexGrow: 1 }}>
+              <Typography
+                variant="h6"
+                component={Link}
+                to="/books"
+                sx={{ flexGrow: 1, color: 'inherit', textDecoration: 'none' }}
+              >
               📚 Book Shelf
               </Typography>
               <Switch
@@ -29,16 +34,15 @@ function App() {
                 onChange={() => setDarkMode(!darkMode)}
                 color="secondary"
               />
+              <AuthButton />
             </Toolbar>
           </AppBar>
 
           <Container maxWidth="xl" sx={{ mt: 3 }}>
             <Routes>
               <Route path="/login" element={<Login />} />
-              <Route element={<RequireAuth />}>
-                <Route path="/books" element={<Booklist />} />
-                <Route path="/books/:id" element={<BookDetail />} />
-              </Route>
+              <Route path="/books" element={<Booklist />} />
+              <Route path="/books/:id" element={<BookDetail />} />
               <Route path="/" element={<Navigate to="/books" replace />} />
             </Routes>
           </Container>

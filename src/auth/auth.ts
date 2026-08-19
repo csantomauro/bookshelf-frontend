@@ -1,6 +1,23 @@
+import { useSyncExternalStore } from "react";
+
 const JWT_KEY = "jwt";
 const ROLE_KEY = "role";
 const USERNAME_KEY = "username";
+
+// storeAuthToken/clearAuth are the only two functions that mutate auth
+// state; components that need to react to login/logout (e.g. the AppBar,
+// which lives outside any route) subscribe here via useIsAuthenticated/
+// useIsAdmin instead of reading sessionStorage once at render time.
+const listeners = new Set<() => void>();
+
+function notifyAuthChanged(): void {
+  listeners.forEach((listener) => listener());
+}
+
+function subscribeToAuthChanges(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
 
 type JwtPayload = {
   role?: string;
@@ -36,12 +53,15 @@ export function storeAuthToken(token: string): void {
   } else {
     sessionStorage.removeItem(USERNAME_KEY);
   }
+
+  notifyAuthChanged();
 }
 
 export function clearAuth(): void {
   sessionStorage.removeItem(JWT_KEY);
   sessionStorage.removeItem(ROLE_KEY);
   sessionStorage.removeItem(USERNAME_KEY);
+  notifyAuthChanged();
 }
 
 export function isAuthenticated(): boolean {
@@ -50,6 +70,14 @@ export function isAuthenticated(): boolean {
 
 export function isAdmin(): boolean {
   return sessionStorage.getItem(ROLE_KEY) === "ADMIN";
+}
+
+export function useIsAuthenticated(): boolean {
+  return useSyncExternalStore(subscribeToAuthChanges, isAuthenticated);
+}
+
+export function useIsAdmin(): boolean {
+  return useSyncExternalStore(subscribeToAuthChanges, isAdmin);
 }
 
 export function getUsername(): string | null {

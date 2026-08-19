@@ -85,7 +85,18 @@ describe("BookDetail tests", () => {
     expect(screen.getByText('4.0 (2)')).toBeInTheDocument();
   });
 
+  test("hides the write-review form for guests and shows a login prompt instead", async () => {
+    render(<BookDetail />, { wrapper });
+    await waitFor(() => screen.getByText('Dune'));
+
+    expect(screen.getByText(/Log in to write a review/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Your thoughts/i)).not.toBeInTheDocument();
+    expect(getMyReview).not.toHaveBeenCalled();
+  });
+
   test("submitting the review form calls upsertMyReview with the form payload", async () => {
+    sessionStorage.setItem('jwt', 'test-token');
+
     const { container } = render(<BookDetail />, { wrapper });
     await waitFor(() => screen.getByText('Dune'));
 
@@ -106,6 +117,7 @@ describe("BookDetail tests", () => {
   });
 
   test("shows delete button and calls deleteMyReview when a review already exists", async () => {
+    sessionStorage.setItem('jwt', 'test-token');
     getMyReview.mockResolvedValue({ id: 9, username: 'me', rating: 5, text: 'Great', createdAt: '2026-01-01T00:00:00Z', updatedAt: null });
 
     render(<BookDetail />, { wrapper });

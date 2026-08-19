@@ -4,7 +4,7 @@ export const getAxiosConfig = (): AxiosRequestConfig => {
   const token = sessionStorage.getItem("jwt");
   return {
     headers: {
-      'Authorization': token,
+      ...(token ? { 'Authorization': token } : {}),
       'Content-Type': 'application/json',
     },
   };

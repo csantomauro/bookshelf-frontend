@@ -8,10 +8,11 @@ describe("Routing", () => {
     sessionStorage.clear();
   });
 
-  test("unauthenticated visit to /books redirects to /login", () => {
+  test("unauthenticated visit to /books shows the book list, no login wall", () => {
     window.history.pushState({}, '', '/books');
     render(<App />);
-    expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
+    expect(screen.getByText(/Loading/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/password/i)).not.toBeInTheDocument();
   });
 
   test("authenticated visit to /login redirects to /books", () => {
