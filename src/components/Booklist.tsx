@@ -29,6 +29,9 @@ function Booklist() {
 
     const handleLogout = () => {
         clearAuth();
+        // Otherwise the next user to log in on this tab sees stale
+        // per-user data (e.g. "your review") from the previous session.
+        queryClient.clear();
         navigate('/login');
     };
 

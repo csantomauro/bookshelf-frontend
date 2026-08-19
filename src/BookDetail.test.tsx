@@ -53,6 +53,7 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 
 describe("BookDetail tests", () => {
   beforeEach(() => {
+    sessionStorage.clear();
     queryClient.clear();
     getBook.mockResolvedValue(mockBook);
     getReviews.mockResolvedValue(mockReviews);
@@ -61,13 +62,25 @@ describe("BookDetail tests", () => {
     deleteMyReview.mockResolvedValue(undefined);
   });
 
-  test("renders book title, reviews and computed average rating", async () => {
+  test("renders book title, reviews, computed average rating and review dates", async () => {
     render(<BookDetail />, { wrapper });
 
     await waitFor(() => screen.getByText('Dune'));
 
     expect(screen.getByText('alice')).toBeInTheDocument();
     expect(screen.getByText('Loved it')).toBeInTheDocument();
+    expect(screen.getByText('bob')).toBeInTheDocument();
+    expect(screen.getByText('4.0 (2)')).toBeInTheDocument();
+    expect(screen.getByText(new Date(mockReviews[1].createdAt).toLocaleDateString())).toBeInTheDocument();
+  });
+
+  test("hides the logged-in user's own review from the public list, but keeps it in the average", async () => {
+    sessionStorage.setItem('username', 'alice');
+
+    render(<BookDetail />, { wrapper });
+    await waitFor(() => screen.getByText('Dune'));
+
+    expect(screen.queryByText('Loved it')).not.toBeInTheDocument();
     expect(screen.getByText('bob')).toBeInTheDocument();
     expect(screen.getByText('4.0 (2)')).toBeInTheDocument();
   });

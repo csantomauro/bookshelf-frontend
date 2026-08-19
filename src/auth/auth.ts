@@ -1,8 +1,10 @@
 const JWT_KEY = "jwt";
 const ROLE_KEY = "role";
+const USERNAME_KEY = "username";
 
 type JwtPayload = {
   role?: string;
+  sub?: string;
 };
 
 function decodeJwtPayload(token: string): JwtPayload | null {
@@ -21,17 +23,25 @@ function decodeJwtPayload(token: string): JwtPayload | null {
 
 export function storeAuthToken(token: string): void {
   sessionStorage.setItem(JWT_KEY, token);
-  const role = decodeJwtPayload(token)?.role;
-  if (role) {
-    sessionStorage.setItem(ROLE_KEY, role);
+  const payload = decodeJwtPayload(token);
+
+  if (payload?.role) {
+    sessionStorage.setItem(ROLE_KEY, payload.role);
   } else {
     sessionStorage.removeItem(ROLE_KEY);
+  }
+
+  if (payload?.sub) {
+    sessionStorage.setItem(USERNAME_KEY, payload.sub);
+  } else {
+    sessionStorage.removeItem(USERNAME_KEY);
   }
 }
 
 export function clearAuth(): void {
   sessionStorage.removeItem(JWT_KEY);
   sessionStorage.removeItem(ROLE_KEY);
+  sessionStorage.removeItem(USERNAME_KEY);
 }
 
 export function isAuthenticated(): boolean {
@@ -40,6 +50,10 @@ export function isAuthenticated(): boolean {
 
 export function isAdmin(): boolean {
   return sessionStorage.getItem(ROLE_KEY) === "ADMIN";
+}
+
+export function getUsername(): string | null {
+  return sessionStorage.getItem(USERNAME_KEY);
 }
 
 export function isForbiddenError(error: unknown): boolean {

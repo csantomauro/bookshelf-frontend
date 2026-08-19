@@ -4,7 +4,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Box, Button, Divider, Paper, Rating, Snackbar, Stack, TextField, Typography } from '@mui/material';
 import { deleteMyReview, getBook, getMyReview, getReviews, upsertMyReview } from '../api/reviewapi';
-import { isForbiddenError, PERMISSION_DENIED_MESSAGE } from '../auth/auth';
+import { getUsername, isForbiddenError, PERMISSION_DENIED_MESSAGE } from '../auth/auth';
+
+const formatDate = (iso: string): string => new Date(iso).toLocaleDateString();
 
 function BookDetail() {
   const { id } = useParams<{ id: string }>();
@@ -89,6 +91,10 @@ function BookDetail() {
     ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
     : null;
 
+  // Your own review already has its own editable box above — showing it
+  // again in the public list here would just duplicate it on screen.
+  const otherReviews = reviews.filter((r) => r.username !== getUsername());
+
   return (
     <Box>
       <Button onClick={() => navigate('/books')} sx={{ mb: 2 }}>&larr; Back to books</Button>
@@ -123,10 +129,15 @@ function BookDetail() {
               value={text}
               onChange={(e) => setText(e.target.value)}
             />
-            <Stack direction="row" spacing={1}>
+            <Stack direction="row" spacing={1} alignItems="center">
               <Button type="submit" variant="contained" disabled={!rating}>Save</Button>
               {myReview && (
-                <Button variant="outlined" color="secondary" onClick={() => removeReview()}>Delete</Button>
+                <>
+                  <Button variant="outlined" color="secondary" onClick={() => removeReview()}>Delete</Button>
+                  <Typography variant="caption" color="text.secondary">
+                    Last saved {formatDate(myReview.updatedAt ?? myReview.createdAt)}
+                  </Typography>
+                </>
               )}
             </Stack>
           </Stack>
@@ -137,14 +148,18 @@ function BookDetail() {
 
       <Typography variant="h6" sx={{ mb: 1 }}>All reviews</Typography>
       {reviews.length === 0 && <Typography color="text.secondary">No reviews yet — be the first.</Typography>}
+      {reviews.length > 0 && otherReviews.length === 0 && (
+        <Typography color="text.secondary">No other reviews yet.</Typography>
+      )}
       <Stack spacing={2}>
-        {reviews.map((r) => (
+        {otherReviews.map((r) => (
           <Paper key={r.id} sx={{ p: 2 }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center">
               <Typography variant="subtitle2">{r.username}</Typography>
               <Rating value={r.rating} readOnly size="small" />
             </Stack>
             {r.text && <Typography variant="body2" sx={{ mt: 1 }}>{r.text}</Typography>}
+            <Typography variant="caption" color="text.secondary">{formatDate(r.createdAt)}</Typography>
           </Paper>
         ))}
       </Stack>
