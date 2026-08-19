@@ -1,16 +1,7 @@
-import axios, { type AxiosRequestConfig } from "axios";
+import axios from "axios";
 import type { Book, BookEntry, BookResponse } from "../type";
+import { getAxiosConfig } from "./httpConfig";
 
-const getAxiosConfig = (): AxiosRequestConfig => {
-    const token = sessionStorage.getItem("jwt");
-    return {
-      headers: {
-        'Authorization': token,
-        'Content-Type': 'application/json',
-      },
-    };
-  };
-  
   export const getBooks = async (): Promise<BookResponse[]> => {
     const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/books`, getAxiosConfig());
     return response.data._embedded.books;

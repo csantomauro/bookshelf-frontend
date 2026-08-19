@@ -31,3 +31,17 @@ export type Book = {
     book: Book;
     url: string;
 }
+
+export type Review = {
+    id: number;
+    username: string;
+    rating: number;
+    text: string | null;
+    createdAt: string;
+    updatedAt: string | null;
+}
+
+export type ReviewRequest = {
+    rating: number;
+    text: string;
+}

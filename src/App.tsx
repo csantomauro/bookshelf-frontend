@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import Login from './components/Login';
 import Booklist from './components/Booklist';
+import BookDetail from './components/BookDetail';
 import RequireAuth from './components/RequireAuth';
 import theme from './themes/theme';
 
@@ -36,6 +37,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route element={<RequireAuth />}>
                 <Route path="/books" element={<Booklist />} />
+                <Route path="/books/:id" element={<BookDetail />} />
               </Route>
               <Route path="/" element={<Navigate to="/books" replace />} />
             </Routes>
