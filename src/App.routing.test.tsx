@@ -11,7 +11,7 @@ describe("Routing", () => {
   test("unauthenticated visit to /books shows the book list, no login wall", () => {
     window.history.pushState({}, '', '/books');
     render(<App />);
-    expect(screen.getByText(/Loading/i)).toBeInTheDocument();
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
     expect(screen.queryByLabelText(/password/i)).not.toBeInTheDocument();
   });
 
@@ -20,6 +20,6 @@ describe("Routing", () => {
     sessionStorage.setItem("role", "USER");
     window.history.pushState({}, '', '/login');
     render(<App />);
-    expect(screen.getByText(/Loading/i)).toBeInTheDocument();
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
   });
 });

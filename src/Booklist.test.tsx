@@ -6,22 +6,24 @@ import '@testing-library/jest-dom/vitest';
 import userEvent from '@testing-library/user-event';
 import Booklist from './components/Booklist';
 
+const mockBook = {
+  title: 'Ford',
+  genre: 'Fiction',
+  isbn: '123',
+  publisher: 'Test',
+  publicationYear: 2020,
+  price: 10,
+  _links: {
+    self: { href: 'http://localhost:8080/api/books/1' },
+    book: { href: 'http://localhost:8080/api/books/1' },
+    author: { href: 'http://localhost:8080/api/authors/1' },
+  },
+};
+
+const { getBooks } = vi.hoisted(() => ({ getBooks: vi.fn() }));
+
 vi.mock('./api/bookapi', () => ({
-  getBooks: vi.fn().mockResolvedValue([
-    {
-      title: 'Ford',
-      genre: 'Fiction',
-      isbn: '123',
-      publisher: 'Test',
-      publicationYear: 2020,
-      price: 10,
-      _links: {
-        self: { href: 'http://localhost:8080/api/books/1' },
-        book: { href: 'http://localhost:8080/api/books/1' },
-        author: { href: 'http://localhost:8080/api/authors/1' },
-      },
-    },
-  ]),
+  getBooks,
   addBook: vi.fn(),
   updateBook: vi.fn(),
   deleteBook: vi.fn(),
@@ -45,11 +47,14 @@ describe("Booklist tests", () => {
   beforeEach(() => {
     sessionStorage.setItem("jwt", "test-token");
     sessionStorage.setItem("role", "ADMIN");
+    queryClient.clear();
+    getBooks.mockReset();
+    getBooks.mockResolvedValue([mockBook]);
   });
 
   test("component renders", () => {
     render(<Booklist />, { wrapper });
-    expect(screen.getByText(/Loading/i)).toBeInTheDocument();
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
   })
 
   test("Book are fetched", async () => {
@@ -70,5 +75,27 @@ describe("Booklist tests", () => {
     render(<Booklist />, { wrapper });
     await waitFor(() => screen.getByText(/Ford/i));
     expect(screen.queryByText(/New Book/i)).not.toBeInTheDocument();
+  });
+
+  test("shows a real failure once the fetch has actually stopped retrying", async () => {
+    getBooks.mockRejectedValue(new Error("network error"));
+    render(<Booklist />, { wrapper });
+    await waitFor(() => screen.getByText(/Failed to load books/i));
+  });
+
+  test("does not flash 'failed' while a background refetch after an earlier error is still in flight", async () => {
+    getBooks.mockRejectedValueOnce(new Error("cold start"));
+    render(<Booklist />, { wrapper });
+    await waitFor(() => screen.getByText(/Failed to load books/i));
+
+    let resolveRetry!: (books: (typeof mockBook)[]) => void;
+    getBooks.mockReturnValueOnce(new Promise((resolve) => { resolveRetry = resolve; }));
+    queryClient.refetchQueries({ queryKey: ['books'] });
+
+    await waitFor(() => expect(screen.queryByText(/Failed to load books/i)).not.toBeInTheDocument());
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+
+    resolveRetry([mockBook]);
+    await waitFor(() => screen.getByText(/Ford/i));
   });
 });

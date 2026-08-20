@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Box, Button, Divider, Paper, Rating, Snackbar, Stack, TextField, Typography } from '@mui/material';
 import { deleteMyReview, getBook, getMyReview, getReviews, upsertMyReview } from '../api/reviewapi';
 import { getUsername, isForbiddenError, PERMISSION_DENIED_MESSAGE, useIsAuthenticated } from '../auth/auth';
+import LoadingState from './LoadingState';
 
 const formatDate = (iso: string): string => new Date(iso).toLocaleDateString();
 
@@ -22,12 +23,12 @@ function BookDetail() {
     setOpen(true);
   };
 
-  const { data: book, isSuccess: bookLoaded } = useQuery({
+  const { data: book, isSuccess: bookLoaded, error: bookError, isFetching: bookFetching } = useQuery({
     queryKey: ['book', bookId],
     queryFn: () => getBook(bookId),
   });
 
-  const { data: reviews, isSuccess: reviewsLoaded } = useQuery({
+  const { data: reviews, isSuccess: reviewsLoaded, error: reviewsError, isFetching: reviewsFetching } = useQuery({
     queryKey: ['reviews', bookId],
     queryFn: () => getReviews(bookId),
   });
@@ -85,8 +86,13 @@ function BookDetail() {
     onError: (err) => console.error(err),
   });
 
+  // Same reasoning as Booklist: don't treat a stale error as final while
+  // react-query is still quietly retrying in the background.
+  if ((bookError && !bookFetching) || (reviewsError && !reviewsFetching)) {
+    return <Box>Failed to load this book.</Box>;
+  }
   if (!bookLoaded || !reviewsLoaded) {
-    return <Box>Loading...</Box>;
+    return <LoadingState />;
   }
 
   const averageRating = reviews.length
