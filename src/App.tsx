@@ -3,9 +3,9 @@ import { CssBaseline, AppBar, Toolbar, Typography, Container, Switch} from '@mui
 import { ThemeProvider } from '@mui/material/styles';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom';
-import Login from './components/Login';
-import Booklist from './components/Booklist';
-import BookDetail from './components/BookDetail';
+import Login from './pages/Login';
+import Booklist from './pages/Booklist';
+import BookDetail from './pages/BookDetail';
 import AuthButton from './components/AuthButton';
 import theme from './themes/theme';
 

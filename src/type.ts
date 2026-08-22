@@ -5,6 +5,7 @@ export type BookResponse = {
     publisher: string;
     publicationYear: number;
     price: number;
+    coverUrl?: string | null;
     _links: {
         self: {
             href: string;
@@ -25,6 +26,7 @@ export type Book = {
     publisher: string;
     publicationYear: number;
     price: number;
+    coverUrl?: string | null;
 }
   
   export type BookEntry = {

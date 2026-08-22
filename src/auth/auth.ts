@@ -96,3 +96,24 @@ export function isForbiddenError(error: unknown): boolean {
 
 export const PERMISSION_DENIED_MESSAGE =
   "You don't have permission for this action. Admin access is required.";
+
+// Matches the shape returned by the backend's ValidationExceptionHandler:
+// { error: "Validation failed", fields: { fieldName: "message", ... } }
+export function getValidationErrorMessage(error: unknown): string | null {
+  if (
+    typeof error !== "object" ||
+    error === null ||
+    !("response" in error)
+  ) {
+    return null;
+  }
+
+  const response = (error as { response?: { status?: number; data?: { fields?: Record<string, string> } } }).response;
+  if (response?.status !== 400 || !response.data?.fields) {
+    return null;
+  }
+
+  const fields = response.data.fields;
+  const messages = Object.entries(fields).map(([field, message]) => `${field}: ${message}`);
+  return messages.length > 0 ? messages.join(", ") : null;
+}

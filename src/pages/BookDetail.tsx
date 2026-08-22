@@ -5,7 +5,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Box, Button, Divider, Paper, Rating, Snackbar, Stack, TextField, Typography } from '@mui/material';
 import { deleteMyReview, getBook, getMyReview, getReviews, upsertMyReview } from '../api/reviewapi';
 import { getUsername, isForbiddenError, PERMISSION_DENIED_MESSAGE, useIsAuthenticated } from '../auth/auth';
-import LoadingState from './LoadingState';
+import LoadingState from '../components/LoadingState';
+import BookCover from '../components/BookCover';
 
 const formatDate = (iso: string): string => new Date(iso).toLocaleDateString();
 
@@ -107,10 +108,17 @@ function BookDetail() {
     <Box>
       <Button onClick={() => navigate('/books')} sx={{ mb: 2 }}>&larr; Back to books</Button>
 
-      <Typography variant="h4">{book.title}</Typography>
-      <Typography variant="body1" color="text.secondary">
-        {book.genre} · {book.publisher} · {book.publicationYear}
-      </Typography>
+      <Stack direction="row" spacing={3} sx={{ mb: 1 }}>
+        <Box sx={{ width: 180, flexShrink: 0 }}>
+          <BookCover coverUrl={book.coverUrl} title={book.title} height={260} />
+        </Box>
+        <Box>
+          <Typography variant="h4">{book.title}</Typography>
+          <Typography variant="body1" color="text.secondary">
+            {book.genre} · {book.publisher} · {book.publicationYear}
+          </Typography>
+        </Box>
+      </Stack>
 
       <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1, mb: 3 }}>
         <Rating name="average-rating" value={averageRating ?? 0} precision={0.5} readOnly />

@@ -5,10 +5,10 @@ import DialogTitle from '@mui/material/DialogTitle';
 import BookDialogContent from './BookDialogContent';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Book, BookEntry, BookResponse } from '../type';
-import { Button, IconButton, Tooltip } from '@mui/material';
+import { Alert, Button, IconButton, Tooltip } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit'
 import { updateBook } from '../api/bookapi';
-import { isForbiddenError } from '../auth/auth';
+import { getValidationErrorMessage, isForbiddenError } from '../auth/auth';
 
 type FormProps = {
   bookdata: BookResponse;
@@ -19,13 +19,15 @@ function EditBook({ bookdata, onForbidden }: FormProps) {
   const queryClient = useQueryClient();
 
   const [open, setOpen] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [book, setBook] = useState<Book>({
     title: '',
     genre: '',
     isbn: '',
     publisher: '',
     publicationYear: 0,
-    price: 0
+    price: 0,
+    coverUrl: null
   });
 
 const { mutate } = useMutation({
@@ -38,8 +40,10 @@ const { mutate } = useMutation({
           isbn: '',
           publisher: '',
           publicationYear: 0,
-          price: 0
+          price: 0,
+          coverUrl: null
         });
+        setFormError(null);
         setOpen(false);
       },
       onError: (err) => {
@@ -48,11 +52,17 @@ const { mutate } = useMutation({
           onForbidden?.();
           return;
         }
+        const validationMessage = getValidationErrorMessage(err);
+        if (validationMessage) {
+          setFormError(validationMessage);
+          return;
+        }
         console.error(err);
       },
-    }); 
+    });
 
   const handleClickOpen = () => {
+    setFormError(null);
     setOpen(true);
     setBook({
       title: bookdata.title,
@@ -60,7 +70,8 @@ const { mutate } = useMutation({
       isbn: bookdata.isbn,
       publisher: bookdata.publisher,
       publicationYear: bookdata.publicationYear,
-      price: bookdata.price
+      price: bookdata.price,
+      coverUrl: bookdata.coverUrl ?? null
     });
   };
 
@@ -75,6 +86,10 @@ const { mutate } = useMutation({
   const handleChange = (event : React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = event.target;
     setBook({ ...book, [name]: type === 'number' ? Number(value) : value });
+  }
+
+  const handleCoverFetched = (url: string | null) => {
+    setBook({ ...book, coverUrl: url });
   }
 
   return(
@@ -96,7 +111,8 @@ const { mutate } = useMutation({
         maxWidth="sm"
       >
         <DialogTitle>Edit book</DialogTitle>
-        <BookDialogContent book={book} handleChange={handleChange}/>
+        {formError && <Alert severity="error" sx={{ mx: 3 }}>{formError}</Alert>}
+        <BookDialogContent book={book} handleChange={handleChange} onCoverFetched={handleCoverFetched}/>
         <DialogActions>
           <Button variant="outlined" color="secondary" onClick={handleClose}>Cancel</Button>
           <Button variant="contained" color="primary" type="submit">Save</Button>

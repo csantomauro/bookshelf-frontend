@@ -4,7 +4,7 @@ import { beforeEach, describe, test, expect, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import userEvent from '@testing-library/user-event';
-import Booklist from './components/Booklist';
+import Booklist from './Booklist';
 
 const mockBook = {
   title: 'Ford',
@@ -22,7 +22,7 @@ const mockBook = {
 
 const { getBooks } = vi.hoisted(() => ({ getBooks: vi.fn() }));
 
-vi.mock('./api/bookapi', () => ({
+vi.mock('../api/bookapi', () => ({
   getBooks,
   addBook: vi.fn(),
   updateBook: vi.fn(),
@@ -61,6 +61,15 @@ describe("Booklist tests", () => {
     render(<Booklist />, { wrapper });
     await waitFor(() => screen.getByText(/New Book/i));
     expect(screen.getByText(/Ford/i)).toBeInTheDocument();
+  })
+
+  test("shows a placeholder when a book has no cover, an image when it does", async () => {
+    getBooks.mockResolvedValue([mockBook, { ...mockBook, title: 'Zed', coverUrl: 'https://covers/zed.jpg', _links: { self: { href: 'http://localhost:8080/api/books/2' }, book: { href: 'http://localhost:8080/api/books/2' }, author: { href: 'http://localhost:8080/api/authors/1' } } }]);
+    render(<Booklist />, { wrapper });
+    await waitFor(() => screen.getByText(/Ford/i));
+
+    expect(screen.getByRole('img', { name: /cover of zed/i })).toHaveAttribute('src', 'https://covers/zed.jpg');
+    expect(screen.queryByRole('img', { name: /cover of ford/i })).not.toBeInTheDocument();
   })
 
   test("Open new book modal", async () => {

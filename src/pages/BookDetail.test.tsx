@@ -4,7 +4,7 @@ import { beforeEach, describe, test, expect, vi } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import userEvent from '@testing-library/user-event';
-import BookDetail from './components/BookDetail';
+import BookDetail from './BookDetail';
 
 const mockBook = {
   title: 'Dune',
@@ -33,7 +33,7 @@ const { getBook, getReviews, getMyReview, upsertMyReview, deleteMyReview } = vi.
   deleteMyReview: vi.fn(),
 }));
 
-vi.mock('./api/reviewapi', () => ({ getBook, getReviews, getMyReview, upsertMyReview, deleteMyReview }));
+vi.mock('../api/reviewapi', () => ({ getBook, getReviews, getMyReview, upsertMyReview, deleteMyReview }));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -72,6 +72,22 @@ describe("BookDetail tests", () => {
     expect(screen.getByText('bob')).toBeInTheDocument();
     expect(screen.getByText('4.0 (2)')).toBeInTheDocument();
     expect(screen.getByText(new Date(mockReviews[1].createdAt).toLocaleDateString())).toBeInTheDocument();
+  });
+
+  test("shows a placeholder when the book has no cover", async () => {
+    render(<BookDetail />, { wrapper });
+    await waitFor(() => screen.getByText('Dune'));
+
+    expect(screen.queryByRole('img', { name: /cover of dune/i })).not.toBeInTheDocument();
+  });
+
+  test("shows the cover image when the book has one", async () => {
+    getBook.mockResolvedValue({ ...mockBook, coverUrl: 'https://covers/dune.jpg' });
+
+    render(<BookDetail />, { wrapper });
+    await waitFor(() => screen.getByText('Dune'));
+
+    expect(screen.getByRole('img', { name: /cover of dune/i })).toHaveAttribute('src', 'https://covers/dune.jpg');
   });
 
   test("hides the logged-in user's own review from the public list, but keeps it in the average", async () => {
