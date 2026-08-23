@@ -58,3 +58,10 @@ export type ShelfEntry = {
     status: ReadingStatus;
     addedAt: string;
 }
+
+export type UserProfile = {
+    username: string;
+    followerCount: number;
+    followingCount: number;
+    followedByMe: boolean;
+}

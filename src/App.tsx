@@ -7,8 +7,9 @@ import Login from './pages/Login';
 import Booklist from './pages/Booklist';
 import BookDetail from './pages/BookDetail';
 import MyShelf from './pages/MyShelf';
+import UserProfile from './pages/UserProfile';
 import AuthButton from './components/AuthButton';
-import { useIsAuthenticated } from './auth/auth';
+import { getUsername, useIsAuthenticated } from './auth/auth';
 import theme from './themes/theme';
 
 const queryClient = new QueryClient();
@@ -16,6 +17,7 @@ const queryClient = new QueryClient();
 function App() {
   const [darkMode, setDarkMode] = useState(true);
   const authed = useIsAuthenticated();
+  const username = getUsername();
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -37,6 +39,11 @@ function App() {
                   My Shelf
                 </Button>
               )}
+              {authed && username && (
+                <Button color="inherit" component={Link} to={`/users/${username}`}>
+                  {username}
+                </Button>
+              )}
               <Switch
                 checked={darkMode}
                 onChange={() => setDarkMode(!darkMode)}
@@ -52,6 +59,7 @@ function App() {
               <Route path="/books" element={<Booklist />} />
               <Route path="/books/:id" element={<BookDetail />} />
               <Route path="/shelf" element={<MyShelf />} />
+              <Route path="/users/:username" element={<UserProfile />} />
               <Route path="/" element={<Navigate to="/books" replace />} />
             </Routes>
           </Container>

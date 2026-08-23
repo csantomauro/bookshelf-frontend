@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { ReadingStatus, Review } from '../type';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Box, Button, Divider, Paper, Rating, Snackbar, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { deleteMyReview, getBook, getMyReview, getReviews, upsertMyReview } from '../api/reviewapi';
@@ -251,7 +251,14 @@ function BookDetail() {
         {otherReviews.map((r) => (
           <Paper key={r.id} sx={{ p: 2 }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center">
-              <Typography variant="subtitle2">{r.username}</Typography>
+              <Typography
+                variant="subtitle2"
+                component={Link}
+                to={`/users/${r.username}`}
+                sx={{ color: 'inherit', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+              >
+                {r.username}
+              </Typography>
               <Rating value={r.rating} readOnly size="small" />
             </Stack>
             {r.text && <Typography variant="body2" sx={{ mt: 1 }}>{r.text}</Typography>}

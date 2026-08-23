@@ -94,6 +94,13 @@ describe("BookDetail tests", () => {
     expect(screen.getByText(new Date(mockReviews[1].createdAt).toLocaleDateString())).toBeInTheDocument();
   });
 
+  test("links a review's username to their profile", async () => {
+    render(<BookDetail />, { wrapper });
+    await waitFor(() => screen.getByText('Dune'));
+
+    expect(screen.getByText('alice').closest('a')).toHaveAttribute('href', '/users/alice');
+  });
+
   test("shows a placeholder when the book has no cover", async () => {
     render(<BookDetail />, { wrapper });
     await waitFor(() => screen.getByText('Dune'));
