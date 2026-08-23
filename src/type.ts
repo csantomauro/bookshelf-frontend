@@ -47,3 +47,14 @@ export type ReviewRequest = {
     rating: number;
     text: string;
 }
+
+export type ReadingStatus = 'WANT_TO_READ' | 'READING' | 'READ';
+
+export type ShelfEntry = {
+    id: number;
+    bookId: number;
+    bookTitle: string;
+    bookCoverUrl: string | null;
+    status: ReadingStatus;
+    addedAt: string;
+}

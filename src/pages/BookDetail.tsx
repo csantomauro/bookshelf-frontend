@@ -1,12 +1,19 @@
 import { useState } from 'react';
-import type { Review } from '../type';
+import type { ReadingStatus, Review } from '../type';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Box, Button, Divider, Paper, Rating, Snackbar, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, Divider, Paper, Rating, Snackbar, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { deleteMyReview, getBook, getMyReview, getReviews, upsertMyReview } from '../api/reviewapi';
+import { deleteMyShelfEntry, getMyShelfEntry, upsertMyShelfEntry } from '../api/shelfapi';
 import { getUsername, isForbiddenError, PERMISSION_DENIED_MESSAGE, useIsAuthenticated } from '../auth/auth';
 import LoadingState from '../components/LoadingState';
 import BookCover from '../components/BookCover';
+
+const SHELF_STATUS_LABELS: Record<ReadingStatus, string> = {
+  WANT_TO_READ: 'Want to read',
+  READING: 'Reading',
+  READ: 'Read',
+};
 
 const formatDate = (iso: string): string => new Date(iso).toLocaleDateString();
 
@@ -87,6 +94,40 @@ function BookDetail() {
     onError: (err) => console.error(err),
   });
 
+  const { data: myShelfEntry } = useQuery({
+    queryKey: ['myShelfEntry', bookId],
+    queryFn: () => getMyShelfEntry(bookId),
+    enabled: authed,
+  });
+
+  const invalidateShelfQuery = () => {
+    queryClient.invalidateQueries({ queryKey: ['myShelfEntry', bookId] });
+  };
+
+  const { mutate: setShelfStatus } = useMutation({
+    mutationFn: (status: ReadingStatus) => upsertMyShelfEntry(bookId, status),
+    onSuccess: () => {
+      showSnackbar('Shelf updated');
+      invalidateShelfQuery();
+    },
+    onError: (err) => {
+      if (isForbiddenError(err)) {
+        showSnackbar(PERMISSION_DENIED_MESSAGE);
+        return;
+      }
+      console.error(err);
+    },
+  });
+
+  const { mutate: removeFromShelf } = useMutation({
+    mutationFn: () => deleteMyShelfEntry(bookId),
+    onSuccess: () => {
+      showSnackbar('Removed from shelf');
+      invalidateShelfQuery();
+    },
+    onError: (err) => console.error(err),
+  });
+
   // Same reasoning as Booklist: don't treat a stale error as final while
   // react-query is still quietly retrying in the background.
   if ((bookError && !bookFetching) || (reviewsError && !reviewsFetching)) {
@@ -126,6 +167,38 @@ function BookDetail() {
           {averageRating !== null ? `${averageRating.toFixed(1)} (${reviews.length})` : 'No ratings yet'}
         </Typography>
       </Stack>
+
+      <Typography variant="h6" sx={{ mb: 1 }}>Your shelf</Typography>
+      {authed ? (
+        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 3 }}>
+          <ToggleButtonGroup
+            value={myShelfEntry?.status ?? null}
+            exclusive
+            size="small"
+            onChange={(_, newStatus: ReadingStatus | null) => {
+              if (newStatus) {
+                setShelfStatus(newStatus);
+              }
+            }}
+          >
+            {(Object.keys(SHELF_STATUS_LABELS) as ReadingStatus[]).map((status) => (
+              <ToggleButton key={status} value={status}>
+                {SHELF_STATUS_LABELS[status]}
+              </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+          {myShelfEntry && (
+            <Button size="small" color="secondary" onClick={() => removeFromShelf()}>
+              Remove from shelf
+            </Button>
+          )}
+        </Stack>
+      ) : (
+        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 3 }}>
+          <Typography color="text.secondary">Log in to add this to your shelf.</Typography>
+          <Button size="small" onClick={() => navigate('/login')}>Log in</Button>
+        </Stack>
+      )}
 
       <Divider sx={{ mb: 3 }} />
 

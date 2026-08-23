@@ -1,18 +1,21 @@
 import { useState } from 'react';
-import { CssBaseline, AppBar, Toolbar, Typography, Container, Switch} from '@mui/material';
+import { CssBaseline, AppBar, Toolbar, Typography, Container, Switch, Button} from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom';
 import Login from './pages/Login';
 import Booklist from './pages/Booklist';
 import BookDetail from './pages/BookDetail';
+import MyShelf from './pages/MyShelf';
 import AuthButton from './components/AuthButton';
+import { useIsAuthenticated } from './auth/auth';
 import theme from './themes/theme';
 
 const queryClient = new QueryClient();
 
 function App() {
   const [darkMode, setDarkMode] = useState(true);
+  const authed = useIsAuthenticated();
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -29,6 +32,11 @@ function App() {
               >
               📚 Book Shelf
               </Typography>
+              {authed && (
+                <Button color="inherit" component={Link} to="/shelf">
+                  My Shelf
+                </Button>
+              )}
               <Switch
                 checked={darkMode}
                 onChange={() => setDarkMode(!darkMode)}
@@ -43,6 +51,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/books" element={<Booklist />} />
               <Route path="/books/:id" element={<BookDetail />} />
+              <Route path="/shelf" element={<MyShelf />} />
               <Route path="/" element={<Navigate to="/books" replace />} />
             </Routes>
           </Container>
