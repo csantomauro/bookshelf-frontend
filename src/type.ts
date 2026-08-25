@@ -65,3 +65,19 @@ export type UserProfile = {
     followingCount: number;
     followedByMe: boolean;
 }
+
+export type BookSearchResult = {
+    id: number;
+    title: string;
+    authorName: string | null;
+    coverUrl: string | null;
+}
+
+export type UserSearchResult = {
+    username: string;
+}
+
+export type SearchResponse = {
+    books: BookSearchResult[];
+    users: UserSearchResult[];
+}

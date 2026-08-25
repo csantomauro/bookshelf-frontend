@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { CssBaseline, AppBar, Toolbar, Typography, Container, Switch, Button} from '@mui/material';
+import { CssBaseline, AppBar, Toolbar, Typography, Container, Switch, Button, IconButton} from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 import { ThemeProvider } from '@mui/material/styles';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom';
@@ -8,6 +9,7 @@ import Booklist from './pages/Booklist';
 import BookDetail from './pages/BookDetail';
 import MyShelf from './pages/MyShelf';
 import UserProfile from './pages/UserProfile';
+import SearchResults from './pages/SearchResults';
 import AuthButton from './components/AuthButton';
 import { getUsername, useIsAuthenticated } from './auth/auth';
 import theme from './themes/theme';
@@ -34,6 +36,9 @@ function App() {
               >
               📚 Book Shelf
               </Typography>
+              <IconButton color="inherit" component={Link} to="/search" aria-label="search">
+                <SearchIcon />
+              </IconButton>
               {authed && (
                 <Button color="inherit" component={Link} to="/shelf">
                   My Shelf
@@ -60,6 +65,7 @@ function App() {
               <Route path="/books/:id" element={<BookDetail />} />
               <Route path="/shelf" element={<MyShelf />} />
               <Route path="/users/:username" element={<UserProfile />} />
+              <Route path="/search" element={<SearchResults />} />
               <Route path="/" element={<Navigate to="/books" replace />} />
             </Routes>
           </Container>
